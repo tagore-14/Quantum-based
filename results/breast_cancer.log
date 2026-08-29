@@ -1,0 +1,26 @@
+C:\Users\veeru\QMLDD\.venv\Lib\site-packages\sklearn\svm\_base.py:239: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+C:\Users\veeru\QMLDD\.venv\Lib\site-packages\sklearn\svm\_base.py:239: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+Dataset: breast_cancer | train=426 test=143 | raw_features=30 -> qubits/components=4
+PCA explained variance retained: 0.792
+
+--- Training classical_logreg ---
+acc=0.986 sens=0.962 spec=1.000 f1=0.981 auc=0.9985324947589098 train_time=0.00s (wall 0.02s)
+
+--- Training classical_svm ---
+acc=0.965 sens=0.906 spec=1.000 f1=0.950 auc=0.9979035639412999 train_time=0.02s (wall 0.03s)
+
+--- Training classical_rf ---
+acc=0.965 sens=0.925 spec=0.989 f1=0.951 auc=0.9964360587002096 train_time=0.35s (wall 0.40s)
+
+--- Training classical_nn ---
+acc=0.965 sens=0.925 spec=0.989 f1=0.951 auc=0.9974842767295597 train_time=0.45s (wall 0.46s)
+
+--- Training quantum_vqc ---
+acc=0.636 sens=0.792 spec=0.544 f1=0.618 auc=0.7138364779874213 train_time=235.09s (wall 244.65s)
+
+--- Training quantum_qsvm ---
+acc=0.937 sens=0.830 spec=1.000 f1=0.907 auc=0.9964360587002096 train_time=49.81s (wall 189.76s)
+
+Saved results to results/breast_cancer.json

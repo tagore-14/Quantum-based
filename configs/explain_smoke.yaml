@@ -1,0 +1,13 @@
+dataset: breast_cancer
+test_size: 0.25
+random_state: 42
+
+preprocessing:
+  n_components: 4
+
+models:
+  - type: classical_logreg
+
+explain: true
+explain_samples: 10
+output: results/explain_smoke.json

@@ -1,0 +1,21 @@
+dataset: heart_disease
+test_size: 0.25
+random_state: 42
+
+preprocessing:
+  method: qaoa_feature_select
+  n_components: 4
+  max_candidate_features: 8
+  p_layers: 2
+  epochs: 20
+
+models:
+  - type: classical_logreg
+  - type: quantum_vqc
+    n_layers: 2
+    epochs: 10
+    batch_size: 32
+
+explain: true
+explain_samples: 10
+output: results/heart_disease_qaoa_smoke.json

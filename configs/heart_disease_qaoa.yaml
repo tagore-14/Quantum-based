@@ -1,0 +1,28 @@
+dataset: heart_disease
+test_size: 0.25
+random_state: 42
+
+preprocessing:
+  method: qaoa_feature_select
+  n_components: 4
+  max_candidate_features: 8
+  p_layers: 2
+  epochs: 30
+
+models:
+  - type: classical_logreg
+  - type: classical_svm
+  - type: classical_rf
+  - type: classical_nn
+  - type: quantum_vqc
+    n_layers: 2
+    epochs: 30
+    batch_size: 32
+    lr: 0.15
+  - type: quantum_qsvm
+    reps: 2
+    max_train_samples: 100
+
+explain: true
+explain_samples: 15
+output: results/heart_disease_qaoa.json

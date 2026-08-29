@@ -1,0 +1,24 @@
+C:\Users\veeru\QMLDD\.venv\Lib\site-packages\sklearn\svm\_base.py:239: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+Dataset: heart_disease | train=202 test=68 | raw_features=13 -> qubits/components=4 | preprocessing=qaoa_feature_select
+Preprocessing summary: {'method': 'qaoa_feature_select', 'k': 4, 'candidate_pool_size': 8, 'p_layers': 2, 'selected_feature_names': ['chest', 'maximum_heart_rate_achieved', 'number_of_major_vessels', 'thal'], 'final_qaoa_cost': -2.2054543189361158, 'training_time_seconds': 10.39987564086914}
+
+--- Training classical_logreg ---
+acc=0.882 sens=0.933 spec=0.842 f1=0.875 auc=0.9140350877192983 train_time=0.02s (wall 0.03s)
+
+--- Training classical_svm ---
+acc=0.853 sens=0.867 spec=0.842 f1=0.839 auc=0.8921052631578948 train_time=0.05s (wall 0.07s)
+
+--- Training classical_rf ---
+acc=0.735 sens=0.700 spec=0.763 f1=0.700 auc=0.8675438596491227 train_time=0.64s (wall 0.73s)
+
+--- Training classical_nn ---
+acc=0.882 sens=0.933 spec=0.842 f1=0.875 auc=0.9254385964912281 train_time=0.57s (wall 0.60s)
+
+--- Training quantum_vqc ---
+acc=0.662 sens=0.600 spec=0.711 f1=0.610 auc=0.737719298245614 train_time=115.72s (wall 118.00s)
+
+--- Training quantum_qsvm ---
+acc=0.838 sens=0.800 spec=0.868 f1=0.814 auc=0.8859649122807018 train_time=47.65s (wall 113.39s)
+
+Saved results to results/heart_disease_qaoa.json

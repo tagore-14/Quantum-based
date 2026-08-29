@@ -1,0 +1,167 @@
+{
+  "dataset": "heart_disease",
+  "n_train": 202,
+  "n_test": 68,
+  "raw_feature_count": 13,
+  "n_components": 4,
+  "explained_variance_ratio": 0.5383228359884975,
+  "results": [
+    {
+      "model_name": "classical_logreg",
+      "is_quantum": false,
+      "accuracy": 0.8823529411764706,
+      "sensitivity": 0.9,
+      "specificity": 0.868421052631579,
+      "precision": 0.84375,
+      "f1": 0.8709677419354839,
+      "roc_auc": 0.9271929824561403,
+      "training_time_seconds": 0.008785486221313477,
+      "inference_time_seconds": 0.0,
+      "metadata": {
+        "n_params": 5
+      }
+    },
+    {
+      "model_name": "classical_svm",
+      "is_quantum": false,
+      "accuracy": 0.8823529411764706,
+      "sensitivity": 0.9,
+      "specificity": 0.868421052631579,
+      "precision": 0.84375,
+      "f1": 0.8709677419354839,
+      "roc_auc": 0.9131578947368422,
+      "training_time_seconds": 0.0468902587890625,
+      "inference_time_seconds": 0.006139516830444336,
+      "metadata": {
+        "n_params": null
+      }
+    },
+    {
+      "model_name": "classical_rf",
+      "is_quantum": false,
+      "accuracy": 0.8088235294117647,
+      "sensitivity": 0.9,
+      "specificity": 0.7368421052631579,
+      "precision": 0.7297297297297297,
+      "f1": 0.8059701492537313,
+      "roc_auc": 0.8995614035087719,
+      "training_time_seconds": 0.7376000881195068,
+      "inference_time_seconds": 0.031970977783203125,
+      "metadata": {
+        "n_params": null
+      }
+    },
+    {
+      "model_name": "classical_nn",
+      "is_quantum": false,
+      "accuracy": 0.8529411764705882,
+      "sensitivity": 0.8,
+      "specificity": 0.8947368421052632,
+      "precision": 0.8571428571428571,
+      "f1": 0.8275862068965517,
+      "roc_auc": 0.9175438596491228,
+      "training_time_seconds": 0.6809372901916504,
+      "inference_time_seconds": 0.0,
+      "metadata": {
+        "n_params": 225
+      }
+    },
+    {
+      "model_name": "quantum_vqc",
+      "is_quantum": true,
+      "accuracy": 0.6911764705882353,
+      "sensitivity": 0.7666666666666667,
+      "specificity": 0.631578947368421,
+      "precision": 0.6216216216216216,
+      "f1": 0.6865671641791045,
+      "roc_auc": 0.8017543859649122,
+      "training_time_seconds": 109.2184419631958,
+      "inference_time_seconds": 0.5735559463500977,
+      "metadata": {
+        "n_qubits": 4,
+        "n_layers": 2,
+        "n_params": 9,
+        "circuit_depth": 3,
+        "final_train_loss": 1.0126426771562567,
+        "training_time_seconds": 109.2184419631958,
+        "decision_threshold": 0.003922420374382031
+      }
+    },
+    {
+      "model_name": "quantum_qsvm",
+      "is_quantum": true,
+      "accuracy": 0.8235294117647058,
+      "sensitivity": 0.7333333333333333,
+      "specificity": 0.8947368421052632,
+      "precision": 0.8461538461538461,
+      "f1": 0.7857142857142857,
+      "roc_auc": 0.9008771929824562,
+      "training_time_seconds": 52.55997967720032,
+      "inference_time_seconds": 35.420703649520874,
+      "metadata": {
+        "n_qubits": 4,
+        "reps": 2,
+        "circuit_depth": 4,
+        "n_train_used": 100,
+        "n_support_vectors": 53,
+        "training_time_seconds": 52.55997967720032
+      }
+    }
+  ],
+  "explanations": {
+    "classical_logreg": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "pc_0": 0.33844686586827305,
+        "pc_1": 0.05575214501354335,
+        "pc_2": 0.017269004439280755,
+        "pc_3": 0.0359978911104123
+      }
+    },
+    "classical_svm": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "pc_0": 0.33011689614959544,
+        "pc_1": 0.04348607572203817,
+        "pc_2": 0.022497310064888552,
+        "pc_3": 0.03839009620829226
+      }
+    },
+    "classical_rf": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "pc_0": 0.3469994444444444,
+        "pc_1": 0.06480166666666666,
+        "pc_2": 0.04441277777777778,
+        "pc_3": 0.05264944444444445
+      }
+    },
+    "classical_nn": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "pc_0": 0.33306900897383934,
+        "pc_1": 0.03093522071762661,
+        "pc_2": 0.011544570320765227,
+        "pc_3": 0.025552170937819866
+      }
+    },
+    "quantum_vqc": {
+      "method": "perturbation_attribution",
+      "importances": {
+        "pc_0": 0.0015504947891403435,
+        "pc_1": 0.0009026025205640887,
+        "pc_2": 0.0033535884483933513,
+        "pc_3": 0.0022708746283007586
+      }
+    },
+    "quantum_qsvm": {
+      "method": "perturbation_attribution",
+      "importances": {
+        "pc_0": 0.021223789144973915,
+        "pc_1": 0.008375838050197596,
+        "pc_2": 0.009175848886205262,
+        "pc_3": 0.013321909682462862
+      }
+    }
+  }
+}

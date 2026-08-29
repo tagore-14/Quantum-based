@@ -1,0 +1,180 @@
+{
+  "dataset": "heart_disease",
+  "n_train": 202,
+  "n_test": 68,
+  "raw_feature_count": 13,
+  "n_components": 4,
+  "preprocessing_summary": {
+    "method": "qaoa_feature_select",
+    "k": 4,
+    "candidate_pool_size": 8,
+    "p_layers": 2,
+    "selected_feature_names": [
+      "chest",
+      "maximum_heart_rate_achieved",
+      "number_of_major_vessels",
+      "thal"
+    ],
+    "final_qaoa_cost": -2.2054543189361158,
+    "training_time_seconds": 10.39987564086914
+  },
+  "results": [
+    {
+      "model_name": "classical_logreg",
+      "is_quantum": false,
+      "accuracy": 0.8823529411764706,
+      "sensitivity": 0.9333333333333333,
+      "specificity": 0.8421052631578947,
+      "precision": 0.8235294117647058,
+      "f1": 0.875,
+      "roc_auc": 0.9140350877192983,
+      "training_time_seconds": 0.01570749282836914,
+      "inference_time_seconds": 0.0,
+      "metadata": {
+        "n_params": 5
+      }
+    },
+    {
+      "model_name": "classical_svm",
+      "is_quantum": false,
+      "accuracy": 0.8529411764705882,
+      "sensitivity": 0.8666666666666667,
+      "specificity": 0.8421052631578947,
+      "precision": 0.8125,
+      "f1": 0.8387096774193549,
+      "roc_auc": 0.8921052631578948,
+      "training_time_seconds": 0.04774832725524902,
+      "inference_time_seconds": 0.0,
+      "metadata": {
+        "n_params": null
+      }
+    },
+    {
+      "model_name": "classical_rf",
+      "is_quantum": false,
+      "accuracy": 0.7352941176470589,
+      "sensitivity": 0.7,
+      "specificity": 0.7631578947368421,
+      "precision": 0.7,
+      "f1": 0.7,
+      "roc_auc": 0.8675438596491227,
+      "training_time_seconds": 0.6411027908325195,
+      "inference_time_seconds": 0.0318293571472168,
+      "metadata": {
+        "n_params": null
+      }
+    },
+    {
+      "model_name": "classical_nn",
+      "is_quantum": false,
+      "accuracy": 0.8823529411764706,
+      "sensitivity": 0.9333333333333333,
+      "specificity": 0.8421052631578947,
+      "precision": 0.8235294117647058,
+      "f1": 0.875,
+      "roc_auc": 0.9254385964912281,
+      "training_time_seconds": 0.5677990913391113,
+      "inference_time_seconds": 0.0,
+      "metadata": {
+        "n_params": 225
+      }
+    },
+    {
+      "model_name": "quantum_vqc",
+      "is_quantum": true,
+      "accuracy": 0.6617647058823529,
+      "sensitivity": 0.6,
+      "specificity": 0.7105263157894737,
+      "precision": 0.6206896551724138,
+      "f1": 0.6101694915254238,
+      "roc_auc": 0.737719298245614,
+      "training_time_seconds": 115.72285223007202,
+      "inference_time_seconds": 0.44733309745788574,
+      "metadata": {
+        "n_qubits": 4,
+        "n_layers": 2,
+        "n_params": 9,
+        "circuit_depth": 3,
+        "final_train_loss": 0.9511682188944377,
+        "training_time_seconds": 115.72285223007202,
+        "decision_threshold": 0.028059294496904138
+      }
+    },
+    {
+      "model_name": "quantum_qsvm",
+      "is_quantum": true,
+      "accuracy": 0.8382352941176471,
+      "sensitivity": 0.8,
+      "specificity": 0.868421052631579,
+      "precision": 0.8275862068965517,
+      "f1": 0.8135593220338984,
+      "roc_auc": 0.8859649122807018,
+      "training_time_seconds": 47.65169906616211,
+      "inference_time_seconds": 32.400418281555176,
+      "metadata": {
+        "n_qubits": 4,
+        "reps": 2,
+        "circuit_depth": 4,
+        "n_train_used": 100,
+        "n_support_vectors": 55,
+        "training_time_seconds": 47.65169906616211
+      }
+    }
+  ],
+  "explanations": {
+    "classical_logreg": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "chest": 0.06806095736198452,
+        "maximum_heart_rate_achieved": 0.0653968825143127,
+        "number_of_major_vessels": 0.1408602040807923,
+        "thal": 0.17065567969016843
+      }
+    },
+    "classical_svm": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "chest": 0.06972875072823796,
+        "maximum_heart_rate_achieved": 0.06189307306221365,
+        "number_of_major_vessels": 0.1121859274417842,
+        "thal": 0.14180607284777805
+      }
+    },
+    "classical_rf": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "chest": 0.10932772089947093,
+        "maximum_heart_rate_achieved": 0.1181615198412699,
+        "number_of_major_vessels": 0.12782587698412695,
+        "thal": 0.14138896164021167
+      }
+    },
+    "classical_nn": {
+      "method": "shap_kernel_explainer",
+      "importances": {
+        "chest": 0.09777376280099928,
+        "maximum_heart_rate_achieved": 0.05284251417358048,
+        "number_of_major_vessels": 0.13985663250722336,
+        "thal": 0.14279518321236856
+      }
+    },
+    "quantum_vqc": {
+      "method": "perturbation_attribution",
+      "importances": {
+        "chest": 0.0038601693294995146,
+        "maximum_heart_rate_achieved": 0.003443834007719458,
+        "number_of_major_vessels": 0.0025027043157392595,
+        "thal": 0.003898734032122468
+      }
+    },
+    "quantum_qsvm": {
+      "method": "perturbation_attribution",
+      "importances": {
+        "chest": 0.013633046806687463,
+        "maximum_heart_rate_achieved": 0.015874412601555365,
+        "number_of_major_vessels": 0.025734526668431745,
+        "thal": 0.02917839124822543
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+dataset: diabetes
+test_size: 0.25
+random_state: 42
+
+preprocessing:
+  n_components: 4
+
+models:
+  - type: classical_logreg
+  - type: classical_rf
+
+explain: false
+output: results/diabetes_smoke.json

@@ -1,0 +1,24 @@
+C:\Users\veeru\QMLDD\.venv\Lib\site-packages\sklearn\svm\_base.py:239: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+Dataset: diabetes | train=576 test=192 | raw_features=8 -> qubits/components=4
+PCA explained variance retained: 0.712
+
+--- Training classical_logreg ---
+acc=0.698 sens=0.433 spec=0.840 f1=0.500 auc=0.7565373134328358 train_time=0.00s (wall 0.03s)
+
+--- Training classical_svm ---
+acc=0.719 sens=0.463 spec=0.856 f1=0.534 auc=0.7447164179104476 train_time=0.05s (wall 0.08s)
+
+--- Training classical_rf ---
+acc=0.693 sens=0.463 spec=0.816 f1=0.512 auc=0.7054328358208956 train_time=0.43s (wall 0.49s)
+
+--- Training classical_nn ---
+acc=0.672 sens=0.478 spec=0.776 f1=0.504 auc=0.7480597014925373 train_time=1.97s (wall 1.98s)
+
+--- Training quantum_vqc ---
+acc=0.573 sens=0.612 spec=0.552 f1=0.500 auc=0.610268656716418 train_time=288.49s (wall 295.51s)
+
+--- Training quantum_qsvm ---
+acc=0.729 sens=0.418 spec=0.896 f1=0.519 auc=0.735044776119403 train_time=54.66s (wall 352.31s)
+
+Saved results to results/diabetes.json

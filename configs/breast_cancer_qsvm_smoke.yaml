@@ -1,0 +1,14 @@
+dataset: breast_cancer
+test_size: 0.25
+random_state: 42
+
+preprocessing:
+  n_components: 4
+
+models:
+  - type: quantum_qsvm
+    reps: 2
+    max_train_samples: 60
+
+explain: false
+output: results/breast_cancer_qsvm_smoke.json
