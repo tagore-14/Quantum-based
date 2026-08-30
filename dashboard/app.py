@@ -166,9 +166,15 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         sample = sample.apply(pd.to_numeric, errors="coerce").fillna(0.0)
 
         y = (df[target_col].astype(str) == str(positive_value)).astype(int)
-        if np.unique(y).size < 2:
-            st.warning("The target column has only one class, so prediction is not meaningful.")
+        
+        # First class balance check
+        unique_classes = np.unique(y)
+        if len(unique_classes) < 2:
+            st.error(f"❌ Dataset has only 1 class ({unique_classes[0]}). Cannot train classifier. Choose a different target column or positive value.")
             return None
+        
+        class_counts = np.bincount(y)
+        st.caption(f"Class distribution: Positive={int(class_counts[1])}, Negative={int(class_counts[0])}")
 
         X = encoded[feature_names].values
         
@@ -184,14 +190,18 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
             sample = sample.iloc[:, :n_qubits]
             st.info(f"Using top {n_qubits} features for QSVM (limited by {n_qubits} qubits).")
         
-        # Check if we still have both classes after feature selection
-        if np.unique(y).size < 2:
-            st.warning("After feature selection, the dataset has only one class. Cannot train QSVM.")
+        # Final check before training
+        if len(np.unique(y)) < 2:
+            st.error("❌ After feature selection, only 1 class remains. QSVM needs both classes.")
             return None
         
-        with st.spinner(f"Training QSVM model with {n_qubits} qubits..."):
-            qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=min(120, len(X)), random_state=42)
-            qsvm_model.fit(X, y)
+        try:
+            with st.spinner(f"Training QSVM model with {n_qubits} qubits..."):
+                qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=min(120, len(X)), random_state=42)
+                qsvm_model.fit(X, y)
+        except ValueError as e:
+            st.error(f"❌ QSVM training failed: {str(e)}")
+            return None
         
         predicted = qsvm_model.predict(sample.values)[0]
         pred_proba = qsvm_model.predict_proba(sample.values)
