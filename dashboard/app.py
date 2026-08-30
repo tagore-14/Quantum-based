@@ -123,17 +123,16 @@ def add_prediction_column(df: pd.DataFrame, target_col: str, positive_value, max
 
 def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_value, max_features: int = 10, n_qubits_config: int = 5):
     """Build an interactive manual-entry form for the top 10 features and predict
-    whether the target class is present or not."""
+    whether the target class is present or not. Features are automatically compressed to match qubits via PCA."""
     feature_names = get_top_scaled_feature_names(df, target_col, positive_value, max_features=max_features)
     
-    # Limit features to the configured number of qubits
-    feature_names = feature_names[:n_qubits_config]
-    
+    # Keep ALL features for input - PCA will compress later if needed
     if not feature_names:
         st.info("No usable top features were found for manual prediction.")
         return None
 
-    st.subheader(f"Enter the {len(feature_names)} feature values manually (QSVM with {n_qubits_config} qubits)")
+    st.subheader(f"Enter the {len(feature_names)} feature values manually")
+    st.caption(f"(QSVM: {n_qubits_config} qubits → auto-compress {len(feature_names)} features via PCA if needed)")
     feature_values = {}
     encoded = pd.get_dummies(df.drop(columns=[target_col], errors="ignore"), dummy_na=False)
     encoded = encoded.apply(pd.to_numeric, errors="coerce")
