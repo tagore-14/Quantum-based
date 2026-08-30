@@ -226,6 +226,12 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         
         predicted = qsvm_model.predict(sample.values)[0]
         pred_proba = qsvm_model.predict_proba(sample.values)
+        # Extract probability as scalar (first element of array)
+        if isinstance(pred_proba, np.ndarray):
+            pred_proba_val = float(pred_proba[0]) if pred_proba.ndim > 0 else float(pred_proba)
+        else:
+            pred_proba_val = float(pred_proba)
+        
         result = "Disease present" if predicted == 1 else "Disease not present"
         
         # Calculate accuracy on training data
@@ -235,7 +241,7 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         st.success(f"Prediction: {result}")
         st.write(f"Model accuracy on this dataset: {accuracy:.3f}")
         st.caption(f"QSVM - Quantum Kernel SVM ({n_qubits} qubits)")
-        st.caption(f"Positive class probability: {pred_proba:.3f}")
+        st.caption(f"Positive class probability: {pred_proba_val:.3f}")
         return result
 
     return None
