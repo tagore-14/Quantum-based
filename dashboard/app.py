@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from qmldd.data.custom import build_dataset_from_dataframe
 from qmldd.models import MODEL_REGISTRY
+from qmldd.models.quantum import QuantumKernelSVM
 from qmldd.pipeline import run_on_dataset
 from qmldd.validation import check_class_balance, clip_n_components, subsample_dataset
 
@@ -165,19 +166,28 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
             st.warning("The target column has only one class, so prediction is not meaningful.")
             return None
 
-        X = encoded[feature_names]
-        scaler = StandardScaler()
-        model = LogisticRegression(max_iter=1000, random_state=42)
-        model.fit(scaler.fit_transform(X), y)
-        pred_prob = model.predict_proba(scaler.transform(sample))[0]
-        predicted = model.predict(scaler.transform(sample))[0]
+        X = encoded[feature_names].values
+        
+        # Use QSVM for prediction
+        n_features = X.shape[1]
+        n_qubits = min(n_features, 5)  # Limit qubits for performance
+        
+        with st.spinner("Training QSVM model..."):
+            qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=min(120, len(X)), random_state=42)
+            qsvm_model.fit(X, y)
+        
+        predicted = qsvm_model.predict(sample.values)[0]
+        pred_proba = qsvm_model.predict_proba(sample.values)
         result = "Disease present" if predicted == 1 else "Disease not present"
-        accuracy = model.score(scaler.transform(X), y)
+        
+        # Calculate accuracy on training data
+        y_pred_train = qsvm_model.predict(X)
+        accuracy = np.mean(y_pred_train == y)
 
         st.success(f"Prediction: {result}")
         st.write(f"Model accuracy on this dataset: {accuracy:.3f}")
-        if pred_prob.size > 1:
-            st.caption(f"Positive class probability: {pred_prob[1]:.3f}")
+        st.caption(f"QSVM - Quantum Kernel SVM ({n_qubits} qubits)")
+        st.caption(f"Positive class probability: {pred_proba:.3f}")
         return result
 
     return None
