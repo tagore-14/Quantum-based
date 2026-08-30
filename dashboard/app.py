@@ -169,8 +169,16 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         X = encoded[feature_names].values
         
         # Use QSVM for prediction
-        n_features = X.shape[1]
-        n_qubits = min(n_features, 5)  # Limit qubits for performance
+        # Note: QSVM requires number of features <= number of qubits
+        # Limit to 5 qubits for performance; adjust features accordingly
+        n_qubits = 5
+        n_features = min(X.shape[1], n_qubits)
+        
+        # If we have more features than qubits, use only the first n_qubits features
+        if X.shape[1] > n_qubits:
+            X = X[:, :n_qubits]
+            sample = sample.iloc[:, :n_qubits]
+            st.info(f"Using top {n_qubits} features for QSVM (limited by quantum hardware).")
         
         with st.spinner("Training QSVM model..."):
             qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=min(120, len(X)), random_state=42)
