@@ -4,8 +4,11 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import streamlit as st
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -51,6 +54,133 @@ def guess_positive_value_index(values: list) -> int:
             if hint == v:
                 return i
     return 0
+
+
+def get_top_scaled_feature_names(df: pd.DataFrame, target_col: str, positive_value, max_features: int = 10) -> list[str]:
+    """Return the top 10 feature names ranked by absolute correlation with the target
+    after one-hot encoding and z-score scaling."""
+    if target_col not in df.columns:
+        return []
+
+    feature_df = df.drop(columns=[target_col], errors="ignore")
+    if feature_df.empty:
+        return []
+
+    encoded = pd.get_dummies(feature_df, dummy_na=False)
+    if encoded.empty:
+        return []
+
+    encoded = encoded.apply(pd.to_numeric, errors="coerce")
+    encoded = encoded.fillna(encoded.median())
+
+    target = (df[target_col].astype(str) == str(positive_value)).astype(float).to_numpy()
+    if np.unique(target).size < 2:
+        return list(encoded.columns[:max_features])
+
+    scaler = StandardScaler()
+    scaled = scaler.fit_transform(encoded)
+
+    scores = []
+    for i, col in enumerate(encoded.columns):
+        feature_vec = scaled[:, i]
+        if np.std(feature_vec) == 0:
+            score = 0.0
+        else:
+            score = abs(np.corrcoef(feature_vec, target)[0, 1])
+        scores.append((score, col))
+
+    return [col for _, col in sorted(scores, reverse=True)[:max_features]]
+
+
+def add_prediction_column(df: pd.DataFrame, target_col: str, positive_value, max_features: int = 10) -> pd.DataFrame:
+    """Append a frontend-only prediction column based on the strongest 10 scaled features."""
+    preview = df.copy()
+    if target_col not in preview.columns:
+        return preview.assign(Prediction="N/A")
+
+    feature_names = get_top_scaled_feature_names(preview, target_col, positive_value, max_features=max_features)
+    if not feature_names:
+        return preview.assign(Prediction="N/A")
+
+    X = preview[feature_names].apply(pd.to_numeric, errors="coerce")
+    X = X.fillna(X.median())
+    y = (preview[target_col].astype(str) == str(positive_value)).astype(int)
+
+    if np.unique(y).size < 2:
+        preview["Prediction"] = str(positive_value) if y.iloc[0] == 1 else f"Not {positive_value}"
+        return preview
+
+    scaler = StandardScaler()
+    model = LogisticRegression(max_iter=1000, random_state=42)
+    model.fit(scaler.fit_transform(X), y)
+    preds = model.predict(scaler.transform(X))
+    labels = [str(positive_value) if pred == 1 else f"Not {positive_value}" for pred in preds]
+    preview["Prediction"] = labels
+    return preview
+
+
+def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_value, max_features: int = 10):
+    """Build an interactive manual-entry form for the top 10 features and predict
+    whether the target class is present or not."""
+    feature_names = get_top_scaled_feature_names(df, target_col, positive_value, max_features=max_features)
+    if not feature_names:
+        st.info("No usable top features were found for manual prediction.")
+        return None
+
+    st.subheader("Enter the 10 feature values manually")
+    feature_values = {}
+    encoded = pd.get_dummies(df.drop(columns=[target_col], errors="ignore"), dummy_na=False)
+    encoded = encoded.apply(pd.to_numeric, errors="coerce")
+    encoded = encoded.fillna(encoded.median())
+
+    for feature_name in feature_names:
+        if feature_name in encoded.columns:
+            series = encoded[feature_name]
+            low = float(series.min())
+            high = float(series.max())
+            default = float(series.median())
+            if series.nunique() <= 2:
+                feature_values[feature_name] = st.selectbox(
+                    feature_name,
+                    sorted([float(v) for v in series.unique().tolist()]),
+                    index=0,
+                )
+            else:
+                feature_values[feature_name] = st.number_input(
+                    feature_name,
+                    min_value=low,
+                    max_value=high,
+                    value=default,
+                    step=(high - low) / 100 if high > low else 1.0,
+                )
+        else:
+            feature_values[feature_name] = st.number_input(feature_name, value=0.0)
+
+    if st.button("Predict disease status", type="primary"):
+        sample = pd.DataFrame([feature_values], columns=feature_names)
+        sample = sample.apply(pd.to_numeric, errors="coerce").fillna(0.0)
+
+        y = (df[target_col].astype(str) == str(positive_value)).astype(int)
+        if np.unique(y).size < 2:
+            st.warning("The target column has only one class, so prediction is not meaningful.")
+            return None
+
+        X = encoded[feature_names]
+        scaler = StandardScaler()
+        model = LogisticRegression(max_iter=1000, random_state=42)
+        model.fit(scaler.fit_transform(X), y)
+        pred_prob = model.predict_proba(scaler.transform(sample))[0]
+        predicted = model.predict(scaler.transform(sample))[0]
+        result = "Disease present" if predicted == 1 else "Disease not present"
+        accuracy = model.score(scaler.transform(X), y)
+
+        st.success(f"Prediction: {result}")
+        st.write(f"Model accuracy on this dataset: {accuracy:.3f}")
+        if pred_prob.size > 1:
+            st.caption(f"Positive class probability: {pred_prob[1]:.3f}")
+        return result
+
+    return None
 
 st.set_page_config(page_title="Hybrid QML Disease Detection", layout="wide")
 st.title("Hybrid Quantum-Classical ML Platform for Early Disease Detection")
@@ -186,7 +316,6 @@ else:
 
     df = pd.read_csv(uploaded)
     st.write(f"**{df.shape[0]} rows, {df.shape[1]} columns**")
-    st.dataframe(df.head(10), use_container_width=True)
 
     default_target_idx = guess_target_column_index(list(df.columns))
     target_col = st.selectbox(
@@ -209,6 +338,15 @@ else:
             f"binary classifiers, so '{positive_value}' will be treated as positive and the "
             f"other {len(unique_vals) - 1} value(s) grouped together as negative (one-vs-rest)."
         )
+
+    selected_feature_names = get_top_scaled_feature_names(df, target_col=target_col, positive_value=positive_value, max_features=10)
+    if selected_feature_names:
+        st.caption(f"Selected top 10 scaled features: {', '.join(selected_feature_names)}")
+
+    build_single_patient_prediction(df, target_col=target_col, positive_value=positive_value, max_features=10)
+
+    preview_df = add_prediction_column(df, target_col=target_col, positive_value=positive_value, max_features=10)
+    st.dataframe(preview_df.head(10), use_container_width=True)
 
     drop_cols = st.multiselect(
         "Columns to exclude (e.g. patient ID, notes) - optional",
@@ -269,16 +407,24 @@ else:
             st.stop()
 
         try:
+            reduced_feature_names = get_top_scaled_feature_names(
+                df, target_col=target_col, positive_value=positive_value, max_features=10
+            )
+            df_for_run = df[[*reduced_feature_names, target_col]].copy() if reduced_feature_names else df.copy()
+            df_for_run = df_for_run.drop(columns=[c for c in drop_cols if c in df_for_run.columns], errors="ignore")
             dataset, report = build_dataset_from_dataframe(
-                df, target_col=target_col, positive_value=positive_value,
+                df_for_run, target_col=target_col, positive_value=positive_value,
                 drop_cols=drop_cols, dataset_name=f"custom_{Path(uploaded.name).stem}",
             )
         except ValueError as exc:
             st.error(str(exc))
             st.stop()
 
+        prediction_df = add_prediction_column(df_for_run, target_col=target_col, positive_value=positive_value, max_features=10)
         st.write("**Data preparation report:**")
         st.json(report)
+        st.write("**Prediction preview:**")
+        st.dataframe(prediction_df.head(10), use_container_width=True)
 
         for w in check_class_balance(dataset):
             st.warning(w)
@@ -286,6 +432,16 @@ else:
         n_components, clip_warnings = clip_n_components(dataset, n_components)
         for w in clip_warnings:
             st.warning(w)
+
+        y_count = int(dataset.y.sum())
+        n_total = len(dataset.y)
+        if y_count <= 1 or (n_total - y_count) <= 1:
+            st.error(
+                "This dataset does not have enough samples in both classes to train a valid benchmark. "
+                "Each class needs at least 2 rows before a train/test split can be created. "
+                "Please use a dataset with more balanced labels or change the target/positive-value selection."
+            )
+            st.stop()
 
         if any(m in QUANTUM_MODELS for m in selected_models):
             dataset, was_subsampled = subsample_dataset(dataset, max_rows=max_rows_for_quantum)

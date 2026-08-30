@@ -1,0 +1,51 @@
+{
+  "dataset": "breast_cancer",
+  "n_train": 426,
+  "n_test": 143,
+  "raw_feature_count": 30,
+  "n_components": 4,
+  "preprocessing_summary": {
+    "method": "pca",
+    "n_components": 4,
+    "explained_variance_ratio": 0.7922786426405795
+  },
+  "results": [
+    {
+      "model_name": "classical_logreg",
+      "is_quantum": false,
+      "accuracy": 0.986013986013986,
+      "sensitivity": 0.9622641509433962,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9807692307692307,
+      "roc_auc": 0.9985324947589098,
+      "training_time_seconds": 0.014997243881225586,
+      "inference_time_seconds": 0.001001119613647461,
+      "metadata": {
+        "n_params": 5
+      }
+    },
+    {
+      "model_name": "quantum_vqc",
+      "is_quantum": true,
+      "accuracy": 0.6363636363636364,
+      "sensitivity": 0.7924528301886793,
+      "specificity": 0.5444444444444444,
+      "precision": 0.5060240963855421,
+      "f1": 0.6176470588235294,
+      "roc_auc": 0.7165618448637316,
+      "training_time_seconds": 228.63707637786865,
+      "inference_time_seconds": 1.611994743347168,
+      "metadata": {
+        "n_qubits": 4,
+        "n_layers": 2,
+        "n_params": 9,
+        "circuit_depth": 3,
+        "final_train_loss": 1.057313060663918,
+        "training_time_seconds": 228.63707637786865,
+        "decision_threshold": 0.023711887053195102
+      }
+    }
+  ],
+  "explanations": {}
+}
