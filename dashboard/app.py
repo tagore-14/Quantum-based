@@ -175,6 +175,11 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         
         class_counts = np.bincount(y)
         st.caption(f"Class distribution: Positive={int(class_counts[1])}, Negative={int(class_counts[0])}")
+        
+        # Check for severe imbalance (< 5 samples in minority class)
+        min_class_count = min(class_counts)
+        if min_class_count < 5:
+            st.warning(f"⚠️ Severe imbalance: minority class has only {min_class_count} sample(s). QSVM may fail due to subsampling. Consider using a more balanced dataset or classical models instead.")
 
         X = encoded[feature_names].values
         
@@ -197,8 +202,24 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         
         try:
             with st.spinner(f"Training QSVM model with {n_qubits} qubits..."):
-                qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=min(120, len(X)), random_state=42)
-                qsvm_model.fit(X, y)
+                # Use stratified subsampling to preserve both classes
+                from sklearn.model_selection import train_test_split
+                
+                max_samples = min(120, len(X))
+                if len(X) > max_samples:
+                    # Stratified split to ensure both classes in subsample
+                    X_sub, _, y_sub, _ = train_test_split(
+                        X, y, 
+                        train_size=max_samples,
+                        stratify=y,
+                        random_state=42
+                    )
+                    st.info(f"Subsampled to {max_samples} rows (stratified to preserve both classes).")
+                else:
+                    X_sub, y_sub = X, y
+                
+                qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=len(X_sub), random_state=42)
+                qsvm_model.fit(X_sub, y_sub)
         except ValueError as e:
             st.error(f"❌ QSVM training failed: {str(e)}")
             return None
