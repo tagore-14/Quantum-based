@@ -120,15 +120,19 @@ def add_prediction_column(df: pd.DataFrame, target_col: str, positive_value, max
     return preview
 
 
-def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_value, max_features: int = 10):
+def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_value, max_features: int = 10, n_qubits_config: int = 5):
     """Build an interactive manual-entry form for the top 10 features and predict
     whether the target class is present or not."""
     feature_names = get_top_scaled_feature_names(df, target_col, positive_value, max_features=max_features)
+    
+    # Limit features to the configured number of qubits
+    feature_names = feature_names[:n_qubits_config]
+    
     if not feature_names:
         st.info("No usable top features were found for manual prediction.")
         return None
 
-    st.subheader("Enter the 10 feature values manually")
+    st.subheader(f"Enter the {len(feature_names)} feature values manually (QSVM with {n_qubits_config} qubits)")
     feature_values = {}
     encoded = pd.get_dummies(df.drop(columns=[target_col], errors="ignore"), dummy_na=False)
     encoded = encoded.apply(pd.to_numeric, errors="coerce")
@@ -170,17 +174,22 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         
         # Use QSVM for prediction
         # Note: QSVM requires number of features <= number of qubits
-        # Limit to 5 qubits for performance; adjust features accordingly
-        n_qubits = 5
+        # Use configured qubits; adjust features accordingly
+        n_qubits = n_qubits_config
         n_features = min(X.shape[1], n_qubits)
         
         # If we have more features than qubits, use only the first n_qubits features
         if X.shape[1] > n_qubits:
             X = X[:, :n_qubits]
             sample = sample.iloc[:, :n_qubits]
-            st.info(f"Using top {n_qubits} features for QSVM (limited by quantum hardware).")
+            st.info(f"Using top {n_qubits} features for QSVM (limited by {n_qubits} qubits).")
         
-        with st.spinner("Training QSVM model..."):
+        # Check if we still have both classes after feature selection
+        if np.unique(y).size < 2:
+            st.warning("After feature selection, the dataset has only one class. Cannot train QSVM.")
+            return None
+        
+        with st.spinner(f"Training QSVM model with {n_qubits} qubits..."):
             qsvm_model = QuantumKernelSVM(n_qubits=n_qubits, max_train_samples=min(120, len(X)), random_state=42)
             qsvm_model.fit(X, y)
         
@@ -361,7 +370,17 @@ else:
     if selected_feature_names:
         st.caption(f"Selected top 10 scaled features: {', '.join(selected_feature_names)}")
 
-    build_single_patient_prediction(df, target_col=target_col, positive_value=positive_value, max_features=10)
+    # Add slider for QSVM qubit configuration
+    n_qubits_config = st.slider(
+        "Number of qubits for QSVM (more = more features but slower)",
+        min_value=2,
+        max_value=10,
+        value=5,
+        step=1,
+        help="Each qubit can process one feature. More qubits = can use more features but takes longer to train."
+    )
+
+    build_single_patient_prediction(df, target_col=target_col, positive_value=positive_value, max_features=10, n_qubits_config=n_qubits_config)
 
     preview_df = add_prediction_column(df, target_col=target_col, positive_value=positive_value, max_features=10)
     st.dataframe(preview_df.head(10), use_container_width=True)
