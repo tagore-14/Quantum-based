@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -185,15 +186,19 @@ def build_single_patient_prediction(df: pd.DataFrame, target_col: str, positive_
         
         # Use QSVM for prediction
         # Note: QSVM requires number of features <= number of qubits
-        # Use configured qubits; adjust features accordingly
         n_qubits = n_qubits_config
-        n_features = min(X.shape[1], n_qubits)
+        n_features_available = X.shape[1]
         
-        # If we have more features than qubits, use only the first n_qubits features
-        if X.shape[1] > n_qubits:
-            X = X[:, :n_qubits]
-            sample = sample.iloc[:, :n_qubits]
-            st.info(f"Using top {n_qubits} features for QSVM (limited by {n_qubits} qubits).")
+        # If we have more features than qubits, use PCA to compress
+        if n_features_available > n_qubits:
+            pca = PCA(n_components=n_qubits)
+            X = pca.fit_transform(X)
+            sample_pca = pca.transform(sample.values)
+            explained_var = sum(pca.explained_variance_ratio_) * 100
+            st.info(f"🔄 PCA compression: {n_features_available} features → {n_qubits} features ({explained_var:.1f}% variance retained)")
+            sample = pd.DataFrame(sample_pca, columns=[f"PC{i+1}" for i in range(n_qubits)])
+        else:
+            st.info(f"Using all {n_features_available} available features for QSVM ({n_qubits} qubits available).")
         
         # Final check before training
         if len(np.unique(y)) < 2:
